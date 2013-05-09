@@ -174,7 +174,9 @@ function test(adapterName) {
   });
 }
 
-['postgres', 'mysql'].forEach(function(name) {
-  test(name);
+describe('Node', function() {
+  ['postgres', 'mysql'].forEach(function(name) {
+    test(name);
+  });
 });
 
