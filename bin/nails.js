@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
 var args = process.argv.slice(2);
-  , generate = require('./lib/generator');
+  , Generate = require('./lib/generator');
   , command = args.shift();
 
 switch (command) {
-  case 'new': generate(args.unshift('app')); break;
-  case 'generate': generate(args); break;
+  case 'new': args.unshift('app'); // intentional fail through case
+  case 'generate': {
+    var g = Generator.make(args.shift());
+    return g.generate.apply(g, args);
+  }
   default: throw new Error('unrecognized command: ', command);
 }
