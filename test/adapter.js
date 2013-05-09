@@ -6,16 +6,14 @@ var assert = require('assert')
   , DropTable = require('../lib/node/DropTable')
   , CreateIndex = require('../lib/node/CreateIndex')
   , DropIndex = require('../lib/node/DropIndex')
+  , Adapter = require('../lib/adapter')
 
 config.database = { };
 
-var adapters = {
-  postgres: require('../lib/adapter/postgres'),
-  mysql: require('../lib/adapter/mysql')
-}
-
 function test(adapterName) {
-  var adapter = adapters[adapterName];
+  var adapter = Adapter.make({
+    adapter: adapterName
+  });
 
   describe(adapterName, function() {
     describe('CreateTable', function() {
@@ -64,7 +62,7 @@ function test(adapterName) {
         t.text('text');
         t.time('time');
         t.timestamp('timestamp');
-        assert.equal(adapter.sqlize(t), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapterName]);
       });
     });
 
@@ -80,7 +78,7 @@ function test(adapterName) {
         it('should generate ADD COLUMN statement', function() {
           var t = new AlterTable('people');
           t.string('name', { null: false, default: 'john' });
-          assert.equal(adapter.sqlize(t), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapterName]);
         });
       });
       describe('#rename()', function() {
@@ -92,7 +90,7 @@ function test(adapterName) {
         it('should generate RENAME COLUMN statement', function() {
           var t = new AlterTable('people');
           t.rename('name', 'username');
-          assert.equal(adapter.sqlize(t), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapterName]);
         });   
       });
       describe('#change()', function() {
@@ -105,7 +103,7 @@ function test(adapterName) {
         it('should generate ALTER COLUMN statement', function() {
           var t = new AlterTable('table');
           t.change('drop', 'string', { default: null, null: true });
-          assert.equal(adapter.sqlize(t), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapterName]);
         });
       });
       describe('#remove()', function() {
@@ -117,7 +115,7 @@ function test(adapterName) {
         it('should generate DROP COLUMN statement', function() {
           var t = new AlterTable('people');
           t.remove('avatar');
-          assert.equal(adapter.sqlize(t), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapterName]);
         });
       });
     });
@@ -130,7 +128,7 @@ function test(adapterName) {
 
       it('should generate ALTER TABLE RENAME TO statement', function() {
         var t = new RenameTable('people', 'users');
-        assert.equal(adapter.sqlize(t), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapterName]);
       });
     });
 
@@ -142,7 +140,7 @@ function test(adapterName) {
 
       it('should generate DROP TABLE statement', function() {
         var t = new DropTable('people');
-        assert.equal(adapter.sqlize(t), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapterName]);
       });
     });
 
@@ -158,7 +156,7 @@ function test(adapterName) {
         var t = new CreateIndex('user', ['username', 'password'], { 
           unique: true 
         });
-        assert.equal(adapter.sqlize(t), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapterName]);
       });
     });
 
@@ -170,13 +168,13 @@ function test(adapterName) {
 
       it('should generate DROP INDEX statement', function() {
         var t = new DropIndex('user', ['username', 'password']);
-        assert.equal(adapter.sqlize(t), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapterName]);
       });
     });
   });
 }
 
-for (var name in adapters) {
+['postgres', 'mysql'].forEach(function(name) {
   test(name);
-}
+});
 
