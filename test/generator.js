@@ -6,27 +6,67 @@ var assert = require('assert')
   , moment = require('moment')
 
 describe('Generator', function() {
-  describe('MigrationGenerator', function() {
-    var dir = '/tmp/migrate';
+  before(function() {
+    config.paths.root = '/tmp';
+    config.paths.db.migrate = 'migrate';
+  });
+
+  describe('AppGenerator', function() {
     var g;
+   
+    before(function() {
+      g = Generator.make('app');
+    });
+
+    it('should generate a app structure', function() {
+      var name = 'new-app'
+        , dir = path.join(config.paths.root, name);
+      g.generate(name);
+      var files = fs.readdirSync(dir).sort();
+      assert(files.length, 3);
+      assert.deepEqual(files, ['Jakefile', 'config', 'db']);
+
+      var jakefile = fs.readFileSync(path.join(dir, files[0]), 'utf8');
+      assert(jakefile.indexOf("require('nails');") > 0, true);
+
+      assert(fs.statSync(path.join(dir, files[1])).isDirectory(), true);
+      assert(require(path.join(dir, 'config/database.js'), {
+        development: {
+          adapter: 'postgres',
+          database: 'new_app_development',
+          user: 'new_app'
+        },
+        test: {
+          adapter: 'postgres',
+          database: 'new_app_test',
+          user: 'new_app'
+        },
+        production: {
+          adapter: 'postgres',
+          database: 'new_app_production',
+          user: 'new_app'
+        }
+      }));
+
+      assert(fs.statSync(path.join(dir, files[2])).isDirectory(), true);
+    });
+  });
+  describe('MigrationGenerator', function() {
+    var dir = '/tmp/migrate' , g;
 
     before(function() {
-      config.paths.root = '/tmp';
-      config.paths.db.migrate = 'migrate';
-      config.package = { version: "2.7.8" };
-      g = Generator.make('migration');
+      g = Generator.make('migration')
     });
 
     it('should generate a migrate file', function() {
       g.generate('addUsers');
-
       var files = fs.readdirSync(dir);
       assert(files.length, 1);
 
       var filename = files[0]
         , version = filename.split('-')[0]
         , name = filename.split('-')[1];
-      assert(version.slice(0, -3), moment().format('278YYYYMMDDHHmmss'));
+      assert(version.slice(0, -3), moment().format('YYYYMMDDHHmmss'));
       assert(name, 'addUsers');
 
       var migration = require(path.join(dir, filename));
