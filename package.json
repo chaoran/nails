@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "colors": "*",
-    "optimist": "*"
+    "optimist": "*",
+    "moment": "*",
+    "mkdirp": "*"
   },
   "repository": "",
   "author": "Chaoran Yang",
