@@ -6,6 +6,13 @@
   "scripts": {
     "test": "mocha test"
   },
+  "bin": {
+    "nails": "bin/nails.js"
+  },
+  "dependencies": {
+    "colors": "*",
+    "optimist": "*"
+  },
   "repository": "",
   "author": "Chaoran Yang",
   "license": "BSD"

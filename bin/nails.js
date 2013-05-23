@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-var args = process.argv.slice(2);
-  , Generate = require('./lib/generator');
+var args = process.argv.slice(2)
+  , Generator = require('../lib/generator')
   , command = args.shift();
 
 switch (command) {
