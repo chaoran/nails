@@ -1,0 +1,9 @@
+{
+  "name": "%{app_name}",
+  "version": "0.0.0",
+  "description": "a new neutron app",
+  "main": "index.js",
+  "dependencies": {
+    "neutron": "*"
+  }
+}

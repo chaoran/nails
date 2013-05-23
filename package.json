@@ -1,5 +1,5 @@
 {
-  "name": "nails",
+  "name": "neutron",
   "version": "0.0.1",
   "description": "a node.js module that encapsulates rails utilities.",
   "main": "index.js",
@@ -7,7 +7,7 @@
     "test": "mocha test"
   },
   "bin": {
-    "nails": "bin/nails.js"
+    "neutron": "bin/neutron.js"
   },
   "dependencies": {
     "colors": "*",
@@ -15,7 +15,10 @@
     "moment": "*",
     "mkdirp": "*"
   },
-  "repository": "",
-  "author": "Chaoran Yang",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chaoran/neutron.git"
+  },
+  "author": "Chaoran Yang <chaoran@me.com>",
   "license": "BSD"
 }

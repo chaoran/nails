@@ -27,7 +27,7 @@ describe('Generator', function() {
       assert.deepEqual(files, ['Jakefile', 'config', 'db']);
 
       var jakefile = fs.readFileSync(path.join(dir, files[0]), 'utf8');
-      assert(jakefile.indexOf("require('nails');") > 0, true);
+      assert(jakefile.indexOf("require('neutron');") > 0, true);
 
       assert(fs.statSync(path.join(dir, files[1])).isDirectory(), true);
       assert(require(path.join(dir, 'config/database.js'), {
