@@ -4,11 +4,11 @@ var assert = require('assert')
   , path = require('path')
   , fs = require('fs')
   , moment = require('moment')
+  , exec = require('child_process').exec;
 
 describe('Generator', function() {
   before(function() {
     config.paths.root = '/tmp';
-    config.paths.db.migrate = 'migrate';
   });
 
   describe('AppGenerator', function() {
@@ -50,9 +50,13 @@ describe('Generator', function() {
 
       assert(fs.statSync(path.join(dir, files[2])).isDirectory(), true);
     });
+
+    after(function(done) {
+      exec('rm -rf /tmp/new-app', done);
+    });
   });
   describe('MigrationGenerator', function() {
-    var dir = '/tmp/migrate' , g;
+    var dir = '/tmp/db/migrate' , g;
 
     before(function() {
       g = Generator.make('migration')
@@ -76,25 +80,19 @@ describe('Generator', function() {
     });
 
     it('should generate a migrate file with a specified version', function() {
-      g.generate('addPosts', '123456');
+      g.generate('addPosts', '12341213141516');
       var files = fs.readdirSync(dir);
       assert(files.length, 2);
 
       var filename = files[0]
         , version = filename.split('-')[0]
         , name = filename.split('-')[1];
-      assert(version, '123456');
+      assert(version, '12341213141516');
       assert(name, 'addPosts');
     });
 
-    after(function() {
-      var dir = '/tmp/migrate'
-        , files = fs.readdirSync(dir);
-
-      files.forEach(function(file) { 
-        fs.unlinkSync(path.join(dir, file)) 
-      });
-      fs.rmdirSync(dir);
+    after(function(done) {
+      exec('rm -rf /tmp/db/migrate', done);
     });
   });
 });

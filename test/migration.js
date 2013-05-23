@@ -2,7 +2,7 @@ var assert = require('assert')
   , Migration = require('../lib/migration')
 
 describe('Migration', function() {
-  var migration = new Migration('00012341231112233123-test', {
+  var migration = new Migration('12341231112233-test', {
     up: function() {
       this.createTable('table', function(t) {
         t.string('username', { null: false });
@@ -27,8 +27,8 @@ describe('Migration', function() {
 
   it('should have version and name', function() {
     assert.equal(typeof migration.version, 'string');
-    assert.equal(migration.version, '00012341231112233123');
-    assert.equal(migration.name, '00012341231112233123-test');
+    assert.equal(migration.version, '12341231112233');
+    assert.equal(migration.name, '12341231112233-test');
   });
 
   describe('#up()', function() {
