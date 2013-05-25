@@ -24,13 +24,13 @@ describe('Generator', function() {
       g.generate(name);
       var files = fs.readdirSync(dir).sort();
       assert(files.length, 3);
-      assert.deepEqual(files, ['Jakefile', 'config', 'db']);
+      assert.deepEqual(files, ['Jakefile', 'config', 'package.json']);
 
       var jakefile = fs.readFileSync(path.join(dir, files[0]), 'utf8');
       assert(jakefile.indexOf("require('neutron');") > 0, true);
 
       assert(fs.statSync(path.join(dir, files[1])).isDirectory(), true);
-      assert(require(path.join(dir, 'config/database.js'), {
+      assert(require(path.join(dir, 'config/database'), {
         development: {
           adapter: 'postgres',
           database: 'new_app_development',
@@ -48,7 +48,15 @@ describe('Generator', function() {
         }
       }));
 
-      assert(fs.statSync(path.join(dir, files[2])).isDirectory(), true);
+      assert(require(path.join(dir, 'package.json'), {
+        name: "new-app",
+        version: "0.0.0",
+        description: "a new neutron app",
+        main: "index.js",
+        dependencies: {
+          neutron: "*"
+        }
+      }));
     });
 
     after(function(done) {
