@@ -8,6 +8,7 @@ switch (command) {
   case 'new': args.unshift('app'); // intentional fail through case
   case 'generate': {
     var g = Generator.make(args.shift());
+    args.push(function() {});
     return g.generate.apply(g, args);
   }
   default: throw new Error('unrecognized command: ', command);

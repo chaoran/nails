@@ -11,44 +11,47 @@ describe('Generator', function() {
     config.paths.root = '/tmp';
   });
 
-  describe('AppGenerator', function() {
+  describe.only('AppGenerator', function() {
     var g;
    
     before(function() {
       g = Generator.make('app');
     });
 
-    it('should generate a app structure', function() {
+    it('should generate a app structure', function(done) {
       var name = 'new-app'
         , dir = path.join(config.paths.root, name);
-      g.generate(name);
-      var files = fs.readdirSync(dir).sort();
-      assert(files.length, 3);
-      assert.deepEqual(files, ['Jakefile', 'config', 'db']);
 
-      var jakefile = fs.readFileSync(path.join(dir, files[0]), 'utf8');
-      assert(jakefile.indexOf("require('neutron');") > 0, true);
+      g.generate(name, function(err) {
+        var files = fs.readdirSync(dir).sort();
+        assert(files.length, 3);
+        assert.deepEqual(files, ['Jakefile', 'config', 'db']);
 
-      assert(fs.statSync(path.join(dir, files[1])).isDirectory(), true);
-      assert(require(path.join(dir, 'config/database.js'), {
-        development: {
-          adapter: 'postgres',
-          database: 'new_app_development',
-          user: 'new_app'
-        },
-        test: {
-          adapter: 'postgres',
-          database: 'new_app_test',
-          user: 'new_app'
-        },
-        production: {
-          adapter: 'postgres',
-          database: 'new_app_production',
-          user: 'new_app'
-        }
-      }));
+        var jakefile = fs.readFileSync(path.join(dir, files[0]), 'utf8');
+        assert(jakefile.indexOf("require('neutron');") > 0, true);
 
-      assert(fs.statSync(path.join(dir, files[2])).isDirectory(), true);
+        assert(fs.statSync(path.join(dir, files[1])).isDirectory(), true);
+        assert(require(path.join(dir, 'config/database.js'), {
+          development: {
+            adapter: 'postgres',
+            database: 'new_app_development',
+            user: 'new_app'
+          },
+          test: {
+            adapter: 'postgres',
+            database: 'new_app_test',
+            user: 'new_app'
+          },
+          production: {
+            adapter: 'postgres',
+            database: 'new_app_production',
+            user: 'new_app'
+          }
+        }));
+
+        assert(fs.statSync(path.join(dir, files[2])).isDirectory(), true);
+        done();
+      });
     });
 
     after(function(done) {
