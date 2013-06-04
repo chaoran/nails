@@ -1,15 +1,33 @@
 #!/usr/bin/env node
 
-var args = process.argv.slice(2)
-  , Generator = require('../lib/generator')
-  , command = args.shift();
+var say = require('../lib/say')
+  , generate = require('../lib/generate')
+  , colors = require('colors')
+  , args = process.argv.slice(2);
 
-switch (command) {
-  case 'new': args.unshift('app'); // intentional fail through case
+var time = function () {
+  var time = process.hrtime();
+  return function(err) {
+    if (err) say.fatal(err.message);
+    time = process.hrtime(time);
+    var ms = time[0] * 1e3 + time[1] / 1e6;
+    console.log('time elasped: %dms'.grey, ms.toFixed(0));
+  };
+};
+
+switch (args.shift()) {
+  case 'new': {
+    var root = args.shift();
+    var options = require('optimist').default({
+      'database': 'postgres'
+    }).alias('d', 'database').parse(args);
+
+    generate.app(root, options, time()); 
+  }; break;
   case 'generate': {
-    var g = Generator.make(args.shift());
-    args.push(function() {});
-    return g.generate.apply(g, args);
-  }
-  default: throw new Error('unrecognized command: ', command);
+    var entity = args.shift();
+    args.push(time());
+    generate[entity].apply(generate, args);
+  }; break;
+  default: say.fatal('unknown command: ' + command);
 }
