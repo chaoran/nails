@@ -1,4 +1,4 @@
-var Runner = require('./runner')
+var app = require('../index')();
 
 var time = function () {
   var time = process.hrtime();
@@ -14,19 +14,18 @@ var time = function () {
 
 namespace('db', function() {
   task('create', { async: true }, function() {
-    var adapter = require('./adapter');
-    adapter.createDb(time())
+    app.adapter.createDb(time())
   });
   task('drop', { async: true }, function() {
-    var adapter = require('./adapter');
-    adapter.dropDb(time());
+    app.adapter.dropDb(time());
+  });
+  task('version', { async: true }, function() {
+    app.migrator.version(time());
   });
   task('migrate', { async: true }, function() {
-    var runner = new Runner();
-    runner.migrate(process.env.VERSION, complete);
+    app.migrator.migrate(process.env.VERSION, time());
   });
   task('rollback', { async: true }, function() {
-    var runner = new Runner();
-    runner.rollback(process.env.STEP, complete);
+    app.migrator.rollback(process.env.STEP, time());
   });
 });
