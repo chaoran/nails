@@ -1,2 +1,2 @@
 #!/usr/bin/env jake
-require('neutron');
+require('neutron').Jakefile;

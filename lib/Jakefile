@@ -1,0 +1,32 @@
+var Runner = require('./runner')
+
+var time = function () {
+  var time = process.hrtime();
+  return function(err) {
+    if (err) require('./say').fatal(err.message);
+
+    time = process.hrtime(time);
+    var ms = time[0] * 1e3 + time[1] / 1e6;
+    console.log('time elasped: %dms'.grey, ms.toFixed(0));
+    complete();
+  };
+};
+
+namespace('db', function() {
+  task('create', { async: true }, function() {
+    var adapter = require('./adapter');
+    adapter.createDb(time())
+  });
+  task('drop', { async: true }, function() {
+    var adapter = require('./adapter');
+    adapter.dropDb(time());
+  });
+  task('migrate', { async: true }, function() {
+    var runner = new Runner();
+    runner.migrate(process.env.VERSION, complete);
+  });
+  task('rollback', { async: true }, function() {
+    var runner = new Runner();
+    runner.rollback(process.env.STEP, complete);
+  });
+});

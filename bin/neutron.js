@@ -29,5 +29,5 @@ switch (args.shift()) {
     args.push(time());
     generate[entity].apply(generate, args);
   }; break;
-  default: say.fatal('unknown command: ' + command);
+  default: say.fatal('unrecognized command: ' + command);
 }
