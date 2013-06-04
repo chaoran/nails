@@ -1,10 +1,11 @@
 var path = require('path')
   , fs = require('fs')
 
+var cached;
 var neutron = function(root) {
-  if (neutron.current) return neutron.current;
-
+  if (cached) return cached;
   if (!root) root = process.cwd();
+
   var pkg;
   do {
     var pkgPath = path.join(root, 'package.json');
@@ -50,7 +51,7 @@ var neutron = function(root) {
     configurable: true
   });
 
-  return neutron.current = app;
+  return cached = app;
 };
 
 Object.defineProperty(neutron, 'Jakefile', {
@@ -58,12 +59,6 @@ Object.defineProperty(neutron, 'Jakefile', {
     delete this.Jakefile;
     return this.Jakefile = require('./lib/Jakefile');
   },
-  configurable: true
-});
-
-Object.defineProperty(neutron, 'current', {
-  enumerable: false,
-  writable: true,
   configurable: true
 });
 
