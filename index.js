@@ -31,7 +31,23 @@ var neutron = function(root) {
       delete this.config;
       return this.config = require('./lib/config')(app);
     },
-    configurable: true,
+    configurable: true
+  });
+
+  Object.defineProperty(app, 'adapter', {
+    get: function() {
+      delete this.adapter;
+      return this.adapter = require('./lib/adapter')(app);
+    },
+    configurable: true
+  });
+
+  Object.defineProperty(app, 'migrator', {
+    get: function() {
+      delete this.migrator;
+      return this.migrator = require('./lib/migrator')(app);
+    },
+    configurable: true
   });
 
   return neutron.current = app;
