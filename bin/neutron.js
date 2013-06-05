@@ -15,7 +15,8 @@ var time = function () {
   };
 };
 
-switch (args.shift()) {
+var command = args.shift();
+switch (command) {
   case 'new': {
     var root = args.shift();
     var options = require('optimist').default({

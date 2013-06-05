@@ -32,7 +32,7 @@ describe('neutron', function() {
             var files = fs.readdirSync('/tmp/testapp/db/migrate');
             assert.equal(files.length, 1);
             var file = files[0]
-            assert.equal(file.split('-')[1], 'test');
+            assert.equal(file.split('-')[1], 'test.js');
             assert.equal(file.split('-')[0].length, 14);
             assert.ok(require('/tmp/testapp/db/migrate/' + file));
             done();
