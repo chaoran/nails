@@ -43,7 +43,7 @@ var adapters = [
   Adapter({ adapter: 'mysql', database: 'testapp', user: 'root', })
 ];
 
-describe('adapter', function() {
+describe('Adapter', function() {
   adapters.forEach(function(adapter) {
     test(adapter);
   });
