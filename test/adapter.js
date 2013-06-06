@@ -1,5 +1,5 @@
 var should = require('should')
-  , adapter = require('../lib/adapter')
+  , Adapter = require('../lib/adapter')
 
 var test = function(adapter) {
   describe(adapter.name, function() {
@@ -38,23 +38,10 @@ var test = function(adapter) {
   });
 }
 
-var adapters = [adapter({
-  config: {
-    database: {
-      adapter: 'postgres',
-      database: 'testapp',
-      user: 'testapp'
-    }
-  }
-}), adapter({
-  config: {
-    database: {
-      adapter: 'mysql',
-      database: 'testapp',
-      user: 'root',
-    }
-  }
-})];
+var adapters = [
+  Adapter({ adapter: 'postgres', database: 'testapp', user: 'testapp' }), 
+  Adapter({ adapter: 'mysql', database: 'testapp', user: 'root', })
+];
 
 describe('adapter', function() {
   adapters.forEach(function(adapter) {

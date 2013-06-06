@@ -1,8 +1,13 @@
 var assert = require('assert')
-  , Migration = require('../lib/migration')
+  , FakeAdapter = require('./helpers/fakeAdapter')
 
 describe('Migration', function() {
-  var migration = new Migration('12341231112233-test', {
+  var migration, adapter;
+
+  adapter = new FakeAdapter({})
+  var Migration = require('../lib/migration/migration')(adapter);
+
+  migration = new Migration('12341231112233-test', {
     up: function() {
       this.createTable('table', function(t) {
         t.string('username', { null: false });
@@ -25,16 +30,26 @@ describe('Migration', function() {
     }
   });
 
-  it('should have version and name', function() {
+  it('should have a version', function() {
     assert.equal(typeof migration.version, 'string');
     assert.equal(migration.version, '12341231112233');
-    assert.equal(migration.name, '12341231112233-test');
   });
 
   describe('#up()', function() {
-    var sqls = migration.up();
+    var logs;
+
+    before(function(done) {
+      migration.up(done);
+      logs = adapter.logs;
+    });
+
+    it('should first begin a transaction', function() {
+      var string = logs.shift();
+      assert.equal(string, 'BEGIN');
+    });
+
     it('should have a CreateTable node', function() {
-      var node = sqls[0];
+      var node = logs.shift();
       assert.equal(node.type, 'CreateTable');
       assert.equal(node.name, 'table');
       assert.equal(node.children.length, 2);
@@ -53,7 +68,7 @@ describe('Migration', function() {
     });
 
     it('should have a AlterTable node', function() {
-      var node = sqls[1];
+      var node = logs.shift();
       assert.equal(node.type, 'AlterTable');
       assert.equal(node.name, 'table');
       assert.equal(node.children.length, 4);
@@ -82,14 +97,14 @@ describe('Migration', function() {
     });
 
     it('should have a RenameTable node', function() {
-      var node = sqls[2];
+      var node = logs.shift();
       assert.equal(node.type, 'RenameTable');
       assert.equal(node.name, 'table');
       assert.equal(node.newName, 'new-table');
     });
 
     it('should have a CreateIndex node', function() {
-      var node = sqls[3];
+      var node = logs.shift();
       assert.equal(node.type, 'CreateIndex');
       assert.equal(node.table, 'table');
       assert.equal(node.name, 'table_username_password_idx');
@@ -100,22 +115,58 @@ describe('Migration', function() {
       assert.equal(node.columns[1].name, 'password');
       assert.equal(node.columns[1].order, undefined);
     });
+
+    it('should insert schema version', function() {
+      var string = logs.shift();
+      assert.equal(
+        string, 
+        "INSERT INTO schema_migrations VALUES ('12341231112233')"
+      );
+    });
+
+    it('should execute COMMIT', function() {
+      var string = logs.shift();
+      assert.equal(string, 'COMMIT');
+    });
   });
 
   describe('#down()', function() {
-    var sqls = migration.down();
+    var logs;
+
+    before(function(done) {
+      migration.down(done);
+      logs = adapter.logs;
+    });
+
+    it('should first begin a transaction', function() {
+      var string = logs.shift();
+      assert.equal(string, 'BEGIN');
+    });
 
     it('should have a DropIndex node', function() {
-      var node = sqls[0];
+      var node = logs.shift();
       assert.equal(node.type, 'DropIndex');
       assert.equal(node.table, 'table');
       assert.equal(node.name, 'table_username_password_idx');
     });
 
     it('should have a DropTable node', function() {
-      var node = sqls[1];
+      var node = logs.shift();
       assert.equal(node.type, 'DropTable');
       assert.equal(node.name, 'new-table');
+    });
+
+    it('should insert schema version', function() {
+      var string = logs.shift();
+      assert.equal(
+        string, 
+        "DELETE FROM schema_migrations WHERE v='12341231112233'"
+      );
+    });
+
+    it('should execute COMMIT', function() {
+      var string = logs.shift();
+      assert.equal(string, 'COMMIT');
     });
   });
 });

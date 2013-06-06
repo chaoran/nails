@@ -1,14 +1,20 @@
 var assert = require('assert')
-  , CreateTable = require('../lib/node/createTable')
-  , AlterTable = require('../lib/node/alterTable') 
-  , RenameTable = require('../lib/node/RenameTable') 
-  , DropTable = require('../lib/node/DropTable')
-  , CreateIndex = require('../lib/node/CreateIndex')
-  , DropIndex = require('../lib/node/DropIndex')
-  , adapter = require('../lib/adapter')
+  , CreateTable = require('../lib/migration/node/createTable')
+  , AlterTable = require('../lib/migration/node/alterTable') 
+  , RenameTable = require('../lib/migration/node/RenameTable') 
+  , DropTable = require('../lib/migration/node/DropTable')
+  , CreateIndex = require('../lib/migration/node/CreateIndex')
+  , DropIndex = require('../lib/migration/node/DropIndex')
+  , Parser = require('../lib/adapter/parser')
 
-function test(adapter) {
-  describe(adapter.name, function() {
+function test(name) {
+  describe(name, function() {
+    var p;
+
+    before(function() { 
+      p = Parser(name) 
+    });
+
     describe('CreateTable', function() {
       var sql = {
         postgres: 'CREATE TABLE "table" ('
@@ -55,7 +61,7 @@ function test(adapter) {
         t.text('text');
         t.time('time');
         t.timestamp('timestamp');
-        assert.equal(t.toSQL(adapter), sql[adapter.name]);
+        assert.equal(p.parse(t), sql[name]);
       });
     });
 
@@ -71,7 +77,7 @@ function test(adapter) {
         it('should generate ADD COLUMN statement', function() {
           var t = new AlterTable('people');
           t.string('name', { null: false, default: 'john' });
-          assert.equal(t.toSQL(adapter), sql[adapter.name]);
+          assert.equal(p.parse(t), sql[name]);
         });
       });
       describe('#rename()', function() {
@@ -83,7 +89,7 @@ function test(adapter) {
         it('should generate RENAME COLUMN statement', function() {
           var t = new AlterTable('people');
           t.rename('name', 'username');
-          assert.equal(t.toSQL(adapter), sql[adapter.name]);
+          assert.equal(p.parse(t), sql[name]);
         });   
       });
       describe('#change()', function() {
@@ -96,7 +102,7 @@ function test(adapter) {
         it('should generate ALTER COLUMN statement', function() {
           var t = new AlterTable('table');
           t.change('drop', 'string', { default: null, null: true });
-          assert.equal(t.toSQL(adapter), sql[adapter.name]);
+          assert.equal(p.parse(t), sql[name]);
         });
       });
       describe('#remove()', function() {
@@ -108,7 +114,7 @@ function test(adapter) {
         it('should generate DROP COLUMN statement', function() {
           var t = new AlterTable('people');
           t.remove('avatar');
-          assert.equal(t.toSQL(adapter), sql[adapter.name]);
+          assert.equal(p.parse(t), sql[name]);
         });
       });
     });
@@ -121,7 +127,7 @@ function test(adapter) {
 
       it('should generate ALTER TABLE RENAME TO statement', function() {
         var t = new RenameTable('people', 'users');
-        assert.equal(t.toSQL(adapter), sql[adapter.name]);
+        assert.equal(p.parse(t), sql[name]);
       });
     });
 
@@ -133,7 +139,7 @@ function test(adapter) {
 
       it('should generate DROP TABLE statement', function() {
         var t = new DropTable('people');
-        assert.equal(t.toSQL(adapter), sql[adapter.name]);
+        assert.equal(p.parse(t), sql[name]);
       });
     });
 
@@ -149,7 +155,7 @@ function test(adapter) {
         var t = new CreateIndex('user', ['username', 'password'], { 
           unique: true 
         });
-        assert.equal(t.toSQL(adapter), sql[adapter.name]);
+        assert.equal(p.parse(t), sql[name]);
       });
     });
 
@@ -161,28 +167,16 @@ function test(adapter) {
 
       it('should generate DROP INDEX statement', function() {
         var t = new DropIndex('user', ['username', 'password']);
-        assert.equal(t.toSQL(adapter), sql[adapter.name]);
+        assert.equal(p.parse(t), sql[name]);
       });
     });
   });
 }
 
-var adapters = [adapter({
-  config: {
-    database: {
-      adapter: 'postgres',
-    }
-  }
-}), adapter({
-  config: {
-    database: {
-      adapter: 'mysql',
-    }
-  }
-})];
+var parsers = [ 'postgres', 'mysql' ];
 
-describe('adapter', function() {
-  adapters.forEach(function(adapter) {
-    test(adapter);
+describe('Parser', function() {
+  parsers.forEach(function(p) {
+    test(p);
   });
 });
