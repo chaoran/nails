@@ -1,8 +1,7 @@
 var assert = require('assert')
   , util = require('util')
-  , config = require('../lib/config')
-  , Adapter = require('../lib/adapter')
-  , Runner = require('../lib/runner')
+  , adapter = require('../lib/adapter')
+  , migrator = require('../lib/migrator')
   , Migration = require('../lib/migration')
 
 var FakeDb = function() {
@@ -33,11 +32,11 @@ FakeDb.prototype.connect = function(callback) {
       }
 
       if (q.indexOf('INSERT INTO schema_migrations') == 0) {
-        that.schemas.push({ v: q.match(/[0-9]{20}/)[0] });
+        that.schemas.push({ v: q.match(/[0-9]{14}/)[0] });
       }
 
       if (q.indexOf('DELETE FROM schema_migrations') == 0) {
-        var v = q.match(/[0-9]{20}/)[0];
+        var v = q.match(/[0-9]{14}/)[0];
         that.schemas = that.schemas.filter(function(schema) {
           return (schema.v !== v)
         });
@@ -81,6 +80,7 @@ FakeRunner.prototype.up = function(migrations) {
     );
     results.push('COMMIT');
   }
+  results.push('SELECT v FROM schema_migrations ORDER BY v DESC LIMIT 1');
 
   return results;
 }
@@ -103,36 +103,54 @@ FakeRunner.prototype.down = function(migrations) {
     );
     results.push('COMMIT');
   }
+  results.push('SELECT v FROM schema_migrations ORDER BY v DESC LIMIT 1');
 
   return results;
 }
 
 function test(adapterName) {
-  var adapter, runner, fakeRunner, migrations;
+  var runner, fakeRunner, migrations;
 
   before(function() {
-    adapter = Adapter.make({
-      adapter: adapterName
-    });
+    var app = {
+      root: __dirname,
+      config: {
+        path: {
+          db: {
+            migrate: 'fixtures/migrate'
+          }
+        },
+        database: {
+          adapter: adapterName
+        }
+      }
+    };
 
-    runner = new Runner(adapter);
-    fakeRunner = new FakeRunner(adapter);
+    app.adapter = adapter(app);
 
-    adapter.connect = fakeRunner.db.connect.bind(fakeRunner.db);
+    runner = migrator(app);
+    fakeRunner = new FakeRunner(app.adapter);
+
+    app.adapter.connect = fakeRunner.db.connect.bind(fakeRunner.db);
 
     migrations = [
-      new Migration('00120130428112123023-addUsers'),
-      new Migration('00120130429101234391-addPosts'),
-      new Migration('01120130430100153871-changePosts'),
-      new Migration('02320130430100340763-changeUsers')
+      '20130428112123-addUsers',
+      '20130429101234-addPosts',
+      '20130430100153-changePosts',
+      '20130430100340-changeUsers'
     ];
+
+    migrations = migrations.map(function(m) {
+      var impl = require('./fixtures/migrate/' + m);
+      return new Migration(m, impl);
+    });
   });
 
   describe(adapterName, function() {
     describe('#migrate()', function() {
       it('should migrate to a specified version', function(done) {
         var expected = fakeRunner.up(migrations.slice(0,3));
-        runner.migrate('01120130430100153871', function(err) {
+        runner.migrate('20130430100153', function(err) {
           assert.equal(err, null, err);
           assert.deepEqual(fakeRunner.db.fetch(), expected);
           done();
@@ -140,9 +158,10 @@ function test(adapterName) {
       });
       it('should migrate to a previous version', function(done) {
         var expected = fakeRunner.down(migrations.slice(2,3));
-        runner.migrate('00120130429101234391', function(err) {
+        runner.migrate('20130429101234', function(err) {
           assert.equal(err, null, err);
           assert.deepEqual(fakeRunner.db.fetch(), expected);
+          //console.log(fakeRunner.db.fetch(), expected);
           done();
         })
       });
@@ -177,12 +196,7 @@ function test(adapterName) {
   });
 };
 
-describe('Runner', function() {
-  before(function() {
-    config.paths.root = __dirname;
-    config.paths.db.migrate = 'fixtures/migrate';
-  });
-
+describe('migrator', function() {
   ['postgres', 'mysql'].forEach(function(name) {
     test(name);
   });

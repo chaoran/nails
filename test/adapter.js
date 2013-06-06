@@ -1,23 +1,63 @@
-var assert = require('assert')
-  , Adapter = require('../lib/adapter')
+var should = require('should')
+  , adapter = require('../lib/adapter')
 
-describe('Adapter', function() {
-  var adapters = [
-    Adapter.make({ adapter: 'postgres', database: 'postgres' }), 
-    Adapter.make({ adapter: 'mysql', database: 'mysql', user: 'root' })
-  ];
-
-  for (var i = 0, l = adapters.length; i < l; ++i) {
-    describe(adapters[i].name, function() {
-      describe('#connect()', function() {
-        var adapter = adapters[i];
-
-        it('should connect successfully', function(done) {
-          adapter.connect(function(err) {
-            done(err);
-          });
+var test = function(adapter) {
+  describe(adapter.name, function() {
+    describe('#createDb()', function() {
+      it('should create a database', function(done) {
+        adapter.createDb(function(err) {
+          should.not.exists(err);
+          done();
         });
       });
     });
+    describe('#connect()', function() {
+      it('should connect successfully', function(done) {
+        adapter.connect(function(err, conn, end) {
+          should.not.exists(err);
+          end();
+          done();
+        });
+      });
+    });
+    describe('#close()', function() {
+      it('should close successfully', function() {
+        (function(){
+          adapter.close();
+        }).should.not.throw();
+      });
+    });
+    describe('#dropDb()', function() {
+      it('should drop a database', function(done) {
+        adapter.dropDb(function(err) {
+          should.not.exists(err);
+          done();
+        });
+      });
+    });
+  });
+}
+
+var adapters = [adapter({
+  config: {
+    database: {
+      adapter: 'postgres',
+      database: 'testapp',
+      user: 'testapp'
+    }
   }
+}), adapter({
+  config: {
+    database: {
+      adapter: 'mysql',
+      database: 'testapp',
+      user: 'root',
+    }
+  }
+})];
+
+describe('adapter', function() {
+  adapters.forEach(function(adapter) {
+    test(adapter);
+  });
 });

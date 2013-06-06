@@ -1,21 +1,14 @@
 var assert = require('assert')
-  , config = require('../lib/config')
   , CreateTable = require('../lib/node/createTable')
   , AlterTable = require('../lib/node/alterTable') 
   , RenameTable = require('../lib/node/RenameTable') 
   , DropTable = require('../lib/node/DropTable')
   , CreateIndex = require('../lib/node/CreateIndex')
   , DropIndex = require('../lib/node/DropIndex')
-  , Adapter = require('../lib/adapter')
+  , adapter = require('../lib/adapter')
 
-config.database = { };
-
-function test(adapterName) {
-  var adapter = Adapter.make({
-    adapter: adapterName
-  });
-
-  describe(adapterName, function() {
+function test(adapter) {
+  describe(adapter.name, function() {
     describe('CreateTable', function() {
       var sql = {
         postgres: 'CREATE TABLE "table" ('
@@ -62,7 +55,7 @@ function test(adapterName) {
         t.text('text');
         t.time('time');
         t.timestamp('timestamp');
-        assert.equal(t.toSQL(adapter), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapter.name]);
       });
     });
 
@@ -78,7 +71,7 @@ function test(adapterName) {
         it('should generate ADD COLUMN statement', function() {
           var t = new AlterTable('people');
           t.string('name', { null: false, default: 'john' });
-          assert.equal(t.toSQL(adapter), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapter.name]);
         });
       });
       describe('#rename()', function() {
@@ -90,7 +83,7 @@ function test(adapterName) {
         it('should generate RENAME COLUMN statement', function() {
           var t = new AlterTable('people');
           t.rename('name', 'username');
-          assert.equal(t.toSQL(adapter), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapter.name]);
         });   
       });
       describe('#change()', function() {
@@ -103,7 +96,7 @@ function test(adapterName) {
         it('should generate ALTER COLUMN statement', function() {
           var t = new AlterTable('table');
           t.change('drop', 'string', { default: null, null: true });
-          assert.equal(t.toSQL(adapter), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapter.name]);
         });
       });
       describe('#remove()', function() {
@@ -115,7 +108,7 @@ function test(adapterName) {
         it('should generate DROP COLUMN statement', function() {
           var t = new AlterTable('people');
           t.remove('avatar');
-          assert.equal(t.toSQL(adapter), sql[adapterName]);
+          assert.equal(t.toSQL(adapter), sql[adapter.name]);
         });
       });
     });
@@ -128,7 +121,7 @@ function test(adapterName) {
 
       it('should generate ALTER TABLE RENAME TO statement', function() {
         var t = new RenameTable('people', 'users');
-        assert.equal(t.toSQL(adapter), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapter.name]);
       });
     });
 
@@ -140,7 +133,7 @@ function test(adapterName) {
 
       it('should generate DROP TABLE statement', function() {
         var t = new DropTable('people');
-        assert.equal(t.toSQL(adapter), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapter.name]);
       });
     });
 
@@ -156,7 +149,7 @@ function test(adapterName) {
         var t = new CreateIndex('user', ['username', 'password'], { 
           unique: true 
         });
-        assert.equal(t.toSQL(adapter), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapter.name]);
       });
     });
 
@@ -168,15 +161,28 @@ function test(adapterName) {
 
       it('should generate DROP INDEX statement', function() {
         var t = new DropIndex('user', ['username', 'password']);
-        assert.equal(t.toSQL(adapter), sql[adapterName]);
+        assert.equal(t.toSQL(adapter), sql[adapter.name]);
       });
     });
   });
 }
 
-describe('Node', function() {
-  ['postgres', 'mysql'].forEach(function(name) {
-    test(name);
+var adapters = [adapter({
+  config: {
+    database: {
+      adapter: 'postgres',
+    }
+  }
+}), adapter({
+  config: {
+    database: {
+      adapter: 'mysql',
+    }
+  }
+})];
+
+describe('adapter', function() {
+  adapters.forEach(function(adapter) {
+    test(adapter);
   });
 });
-
