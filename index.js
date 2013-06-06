@@ -28,7 +28,6 @@ function locateApp() {
   } while ((root = path.dirname(root)) != '/');
 
   if (root === '/') throw new Error('cannot find app root directory');
-  else root = path.relative(process.cwd(), root);
 
   return new (require('./lib/app'))(root, package);
 }
