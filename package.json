@@ -4,7 +4,7 @@
   "description": "a node.js module that encapsulates rails utilities.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "make test"
   },
   "bin": {
     "neutron": "bin/neutron.js"
