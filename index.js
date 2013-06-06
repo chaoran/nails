@@ -46,7 +46,7 @@ var neutron = function(root) {
   Object.defineProperty(app, 'migrator', {
     get: function() {
       delete this.migrator;
-      return this.migrator = require('./lib/migration')(app);
+      return this.migrator = require('./lib/migrator')(app);
     },
     configurable: true
   });

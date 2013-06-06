@@ -1,10 +1,10 @@
 var assert = require('assert')
-  , CreateTable = require('../lib/migration/node/createTable')
-  , AlterTable = require('../lib/migration/node/alterTable') 
-  , RenameTable = require('../lib/migration/node/RenameTable') 
-  , DropTable = require('../lib/migration/node/DropTable')
-  , CreateIndex = require('../lib/migration/node/CreateIndex')
-  , DropIndex = require('../lib/migration/node/DropIndex')
+  , CreateTable = require('../lib/migrator/node/createTable')
+  , AlterTable = require('../lib/migrator/node/alterTable') 
+  , RenameTable = require('../lib/migrator/node/RenameTable') 
+  , DropTable = require('../lib/migrator/node/DropTable')
+  , CreateIndex = require('../lib/migrator/node/CreateIndex')
+  , DropIndex = require('../lib/migrator/node/DropIndex')
   , Parser = require('../lib/adapter/parser')
 
 function test(name) {

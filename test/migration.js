@@ -5,7 +5,7 @@ describe('Migration', function() {
   var migration, adapter;
 
   adapter = new FakeAdapter({})
-  var Migration = require('../lib/migration/migration')(adapter);
+  var Migration = require('../lib/migrator/migration')(adapter);
 
   migration = new Migration('12341231112233-test', {
     up: function() {

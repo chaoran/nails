@@ -1,6 +1,6 @@
 var assert = require('assert')
   , util = require('util')
-  , Migrator = require('../lib/migration')
+  , Migrator = require('../lib/migrator')
   , FakeAdapter = require('./helpers/fakeAdapter')
 
 describe('migrator', function() {
