@@ -52,15 +52,20 @@ describe('Migration', function() {
       var node = logs.shift();
       assert.equal(node.type, 'CreateTable');
       assert.equal(node.name, 'table');
-      assert.equal(node.children.length, 2);
+      assert.equal(node.children.length, 3);
+
+      var n0 = node.children[0];
+      assert.equal(n0.type, 'DefineColumn');
+      assert.equal(n0.name, 'id');
+      assert.equal(n0.dbType.name, 'primaryKey');
       
-      var n1 = node.children[0];
+      var n1 = node.children[1];
       assert.equal(n1.type, 'DefineColumn');
       assert.equal(n1.name, 'username');
       assert.equal(n1.dbType.name, 'string');
       assert.equal(n1.notNull, true);
 
-      var n2 = node.children[1];
+      var n2 = node.children[2];
       assert.equal(n2.type, 'DefineColumn');
       assert.equal(n2.name, 'created_at');
       assert.equal(n2.dbType.name, 'timestamp');

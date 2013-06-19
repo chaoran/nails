@@ -49,7 +49,6 @@ function test(name) {
 
       it('should generate CREATE TABLE statement', function() {
         var t = new CreateTable('table');
-        t.primaryKey('id');
         t.binary('binary', { null: false });
         t.boolean('boolean', { default: true });
         t.date('date');
