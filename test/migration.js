@@ -11,10 +11,12 @@ describe('Migration', function() {
     up: function() {
       this.createTable('table', function(t) {
         t.string('username', { null: false });
+        t.references('account', { null: false });
         t.timestamp('created_at', { default: 'now()' });
       });
       this.changeTable('table', function(t) {
         t.string('password', { limit: 20 });
+        t.references('owner');
         t.remove('created_at');
         t.change('username', 'string', { limit: 50, null: true });
         t.rename('created_at', 'registered_at');
@@ -52,7 +54,7 @@ describe('Migration', function() {
       var node = logs.shift();
       assert.equal(node.type, 'CreateTable');
       assert.equal(node.name, 'table');
-      assert.equal(node.children.length, 3);
+      assert.equal(node.children.length, 4);
 
       var n0 = node.children[0];
       assert.equal(n0.type, 'DefineColumn');
@@ -67,16 +69,22 @@ describe('Migration', function() {
 
       var n2 = node.children[2];
       assert.equal(n2.type, 'DefineColumn');
-      assert.equal(n2.name, 'created_at');
-      assert.equal(n2.dbType.name, 'timestamp');
-      assert.equal(n2.defaultValue, 'now()');
+      assert.equal(n2.name, 'account_id');
+      assert.equal(n2.dbType.name, 'id');
+      assert.equal(n2.notNull, true);
+
+      var n3 = node.children[3];
+      assert.equal(n3.type, 'DefineColumn');
+      assert.equal(n3.name, 'created_at');
+      assert.equal(n3.dbType.name, 'timestamp');
+      assert.equal(n3.defaultValue, 'now()');
     });
 
     it('should have a AlterTable node', function() {
       var node = logs.shift();
       assert.equal(node.type, 'AlterTable');
       assert.equal(node.name, 'table');
-      assert.equal(node.children.length, 4);
+      assert.equal(node.children.length, 5);
 
       var n1 = node.children[0];
       assert.equal(n1.type, 'AddColumn');
@@ -85,20 +93,25 @@ describe('Migration', function() {
       assert.equal(n1.dbType.limit, 20);
 
       var n2 = node.children[1];
-      assert.equal(n2.type, 'DropColumn');
-      assert.equal(n2.name, 'created_at');
+      assert.equal(n2.type, 'AddColumn');
+      assert.equal(n2.name, 'owner_id');
+      assert.equal(n2.dbType.name, 'id');
 
       var n3 = node.children[2];
-      assert.equal(n3.type, 'AlterColumn');
-      assert.equal(n3.name, 'username');
-      assert.equal(n3.notNull, false);
-      assert.equal(n3.dbType.name, 'string');
-      assert.equal(n3.dbType.limit, 50);
+      assert.equal(n3.type, 'DropColumn');
+      assert.equal(n3.name, 'created_at');
 
       var n4 = node.children[3];
-      assert.equal(n4.type, 'RenameColumn');
-      assert.equal(n4.name, 'created_at');
-      assert.equal(n4.newName, 'registered_at');
+      assert.equal(n4.type, 'AlterColumn');
+      assert.equal(n4.name, 'username');
+      assert.equal(n4.notNull, false);
+      assert.equal(n4.dbType.name, 'string');
+      assert.equal(n4.dbType.limit, 50);
+
+      var n5 = node.children[4];
+      assert.equal(n5.type, 'RenameColumn');
+      assert.equal(n5.name, 'created_at');
+      assert.equal(n5.newName, 'registered_at');
     });
 
     it('should have a RenameTable node', function() {
