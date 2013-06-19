@@ -13,7 +13,7 @@
     "colors": "*",
     "optimist": "*",
     "moment": "*",
-    "mkdirp": "*"
+    "express": "*"
   },
   "repository": {
     "type": "git",
