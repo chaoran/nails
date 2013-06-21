@@ -1,6 +1,6 @@
 {
   "name": "neutron",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a node.js module that encapsulates rails utilities.",
   "main": "index.js",
   "scripts": {
