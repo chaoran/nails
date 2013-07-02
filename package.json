@@ -1,6 +1,6 @@
 {
   "name": "neutron",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a node.js module that encapsulates rails utilities.",
   "main": "index.js",
   "scripts": {
@@ -12,9 +12,7 @@
   "dependencies": {
     "colors": "*",
     "optimist": "*",
-    "moment": "*",
-    "express": "*"
-    "finish": "*"
+    "finish": "*",
     "serialize": "*"
   },
   "repository": {

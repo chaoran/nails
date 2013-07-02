@@ -1,9 +1,10 @@
-var currentApp;
+//var currentApp;
 
-var neutron = module.exports = function() {
-  if (!currentApp) currentApp = locateApp();
-  return currentApp;
-};
+var neutron = module.exports = {};
+  //function() {
+  //if (!currentApp) currentApp = locateApp();
+  //return currentApp;
+//};
 
 Object.defineProperty(neutron, 'Jakefile', {
   get: function() {
@@ -13,21 +14,37 @@ Object.defineProperty(neutron, 'Jakefile', {
   configurable: true
 });
 
-function locateApp() {
-  var path = require('path')
-    , fs = require('fs')
-    , root = process.cwd()
-    , package;
+Object.defineProperty(neutron, 'ActiveRecord', {
+  get: function() {
+    delete this.ActiveRecord;
+    return this.ActiveRecord = require('./lib/ActiveRecord');
+  },
+  configurable: true
+});
 
-  do {
-    var packagePath = path.join(root, 'package.json');
-    if (fs.existsSync(packagePath )) {
-      package = require(packagePath);
-      if (package.dependencies.neutron) break;
-    }
-  } while ((root = path.dirname(root)) != '/');
+//Object.defineProperty(neutron, 'app', {
+  //get: function() {
+    //delete this.app;
+    //return this.app = require('./lib/app')();
+  //},
+  //configurable: true
+//});
 
-  if (root === '/') throw new Error('cannot find app root directory');
+//function locateApp() {
+  //var path = require('path')
+    //, fs = require('fs')
+    //, root = process.cwd()
+    //, package;
 
-  return new (require('./lib/app'))(root, package);
-}
+  //do {
+    //var packagePath = path.join(root, 'package.json');
+    //if (fs.existsSync(packagePath )) {
+      //package = require(packagePath);
+      //if (package.dependencies.neutron) break;
+    //}
+  //} while ((root = path.dirname(root)) != '/');
+
+  //if (root === '/') throw new Error('cannot find app root directory');
+
+  //return new (require('./lib/app'))(root, package);
+//}

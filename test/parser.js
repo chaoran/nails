@@ -1,11 +1,11 @@
 var assert = require('assert')
-  , CreateTable = require('../lib/migrator/node/createTable')
-  , AlterTable = require('../lib/migrator/node/alterTable') 
-  , RenameTable = require('../lib/migrator/node/RenameTable') 
-  , DropTable = require('../lib/migrator/node/DropTable')
-  , CreateIndex = require('../lib/migrator/node/CreateIndex')
-  , DropIndex = require('../lib/migrator/node/DropIndex')
-  , Parser = require('../lib/adapter/parser')
+  , Parser = require('../lib/migrator/parser')
+  , CreateTable = require('../lib/migrator/sql/createTable')
+  , AlterTable = require('../lib/migrator/sql/alterTable')
+  , RenameTable = require('../lib/migrator/sql/renameTable')
+  , DropTable = require('../lib/migrator/sql/dropTable')
+  , CreateIndex = require('../lib/migrator/sql/createIndex')
+  , DropIndex = require('../lib/migrator/sql/dropIndex')
 
 function test(name) {
   describe(name, function() {
@@ -60,7 +60,7 @@ function test(name) {
         t.text('text');
         t.time('time');
         t.timestamp('timestamp');
-        assert.equal(p.parse(t), sql[name]);
+        assert.equal(p.visit(t), sql[name]);
       });
     });
 
@@ -76,7 +76,7 @@ function test(name) {
         it('should generate ADD COLUMN statement', function() {
           var t = new AlterTable('people');
           t.string('name', { null: false, default: 'john' });
-          assert.equal(p.parse(t), sql[name]);
+          assert.equal(p.visit(t), sql[name]);
         });
       });
       describe('#rename()', function() {
@@ -88,7 +88,7 @@ function test(name) {
         it('should generate RENAME COLUMN statement', function() {
           var t = new AlterTable('people');
           t.rename('name', 'username');
-          assert.equal(p.parse(t), sql[name]);
+          assert.equal(p.visit(t), sql[name]);
         });   
       });
       describe('#change()', function() {
@@ -101,7 +101,7 @@ function test(name) {
         it('should generate ALTER COLUMN statement', function() {
           var t = new AlterTable('table');
           t.change('drop', 'string', { default: null, null: true });
-          assert.equal(p.parse(t), sql[name]);
+          assert.equal(p.visit(t), sql[name]);
         });
       });
       describe('#remove()', function() {
@@ -113,7 +113,7 @@ function test(name) {
         it('should generate DROP COLUMN statement', function() {
           var t = new AlterTable('people');
           t.remove('avatar');
-          assert.equal(p.parse(t), sql[name]);
+          assert.equal(p.visit(t), sql[name]);
         });
       });
     });
@@ -126,7 +126,7 @@ function test(name) {
 
       it('should generate ALTER TABLE RENAME TO statement', function() {
         var t = new RenameTable('people', 'users');
-        assert.equal(p.parse(t), sql[name]);
+        assert.equal(p.visit(t), sql[name]);
       });
     });
 
@@ -138,7 +138,7 @@ function test(name) {
 
       it('should generate DROP TABLE statement', function() {
         var t = new DropTable('people');
-        assert.equal(p.parse(t), sql[name]);
+        assert.equal(p.visit(t), sql[name]);
       });
     });
 
@@ -154,7 +154,7 @@ function test(name) {
         var t = new CreateIndex('user', ['username', 'password'], { 
           unique: true 
         });
-        assert.equal(p.parse(t), sql[name]);
+        assert.equal(p.visit(t), sql[name]);
       });
     });
 
@@ -166,7 +166,7 @@ function test(name) {
 
       it('should generate DROP INDEX statement', function() {
         var t = new DropIndex('user', ['username', 'password']);
-        assert.equal(p.parse(t), sql[name]);
+        assert.equal(p.visit(t), sql[name]);
       });
     });
   });

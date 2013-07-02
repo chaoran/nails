@@ -1,31 +1,40 @@
-var app = require('../index')();
-
-var time = function () {
-  var time = process.hrtime();
-  return function(err) {
-    if (err) require('./say').fatal(err.message);
-
-    time = process.hrtime(time);
-    var ms = time[0] * 1e3 + time[1] / 1e6;
-    console.log('time elasped: %dms'.grey, ms.toFixed(0));
-    complete();
-  };
-};
-
 namespace('db', function() {
   task('create', { async: true }, function() {
-    app.adapter.createDb(time())
+    var adpater = require('./adapter')();
+    var reporter = new Reporter('create', adapter.database);
+
+    adapter.createDb(reporter.report(function(err) {
+      if (err.message.indexOf('exist') > 0) this.warn('exists');
+    }, callback))
   });
   task('drop', { async: true }, function() {
-    app.adapter.dropDb(time());
+    var adpater = require('./adapter')();
+    var reporter = new Reporter('drop', adapter.database);
+
+    adapter.dropDb(reporter.report(function(err) {
+      if (err.message.indexOf('exist') >= 0) this.message('not found');
+    }), callback);
   });
   task('version', { async: true }, function() {
-    app.migrator.version(time());
+    var migrator = require('./migrator')();
+    var reporter = new Reporter('version');
+
+    migrator.version(reporter.report(function(err, version) {
+      if (err) return err;
+      else this.target = version;
+    }, callback));
   });
   task('migrate', { async: true }, function() {
-    app.migrator.migrate(process.env.VERSION, time());
+    var migrator = require('./migrator')();
+    migrator.migrate(process.env.VERSION || (require('./version'))(), callback);
   });
   task('rollback', { async: true }, function() {
-    app.migrator.rollback(process.env.STEP, time());
+    var migrator = require('./migrator')();
+    migrator.rollback(process.env.STEP || 1, callback);
   });
 });
+
+function callback(err) {
+  if (err) fail(err);
+  else complete();
+}
