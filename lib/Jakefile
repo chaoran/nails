@@ -1,36 +1,41 @@
+var Reporter = require('./reporter');
+
 namespace('db', function() {
   task('create', { async: true }, function() {
-    var adpater = require('./adapter')();
-    var reporter = new Reporter('create', adapter.database);
+    var adapter = (require('./adapter'))();
 
-    adapter.createDb(reporter.report(function(err) {
-      if (err.message.indexOf('exist') > 0) this.warn('exists');
-    }, callback))
+    adapter.createDb(callback)
   });
   task('drop', { async: true }, function() {
-    var adpater = require('./adapter')();
-    var reporter = new Reporter('drop', adapter.database);
+    var adapter = (require('./adapter'))();
 
-    adapter.dropDb(reporter.report(function(err) {
-      if (err.message.indexOf('exist') >= 0) this.message('not found');
-    }), callback);
+    adapter.dropDb(callback);
   });
   task('version', { async: true }, function() {
-    var migrator = require('./migrator')();
+    var migrator = (require('./migrator'))();
     var reporter = new Reporter('version');
 
-    migrator.version(reporter.report(function(err, version) {
-      if (err) return err;
-      else this.target = version;
-    }, callback));
+    migrator.version(function(err) {
+      migrator.stop();
+      callback(err);
+    });
   });
   task('migrate', { async: true }, function() {
-    var migrator = require('./migrator')();
-    migrator.migrate(process.env.VERSION || (require('./version'))(), callback);
+    var migrator = (require('./migrator'))();
+    var version = process.env.VERSION || require('./version')();
+
+    migrator.migrate(version, function(err) {
+      migrator.stop();
+      callback(err);
+    });
   });
   task('rollback', { async: true }, function() {
-    var migrator = require('./migrator')();
-    migrator.rollback(process.env.STEP || 1, callback);
+    var migrator = (require('./migrator'))();
+
+    migrator.rollback(process.env.STEP || 1, function(err) {
+      migrator.stop();
+      callback(err);
+    });
   });
 });
 
