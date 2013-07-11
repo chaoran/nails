@@ -1,9 +1,6 @@
-var Reporter = require('./reporter');
-
 namespace('db', function() {
   task('create', { async: true }, function() {
     var adapter = (require('./adapter'))();
-
     adapter.createDb(callback)
   });
   task('drop', { async: true }, function() {
