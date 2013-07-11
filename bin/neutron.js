@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
-var say = require('../lib/say')
-  , generate = require('../lib/generate')
+var generate = require('../lib/generate')
   , colors = require('colors')
   , args = process.argv.slice(2);
 
 var time = function () {
   var time = process.hrtime();
   return function(err) {
-    if (err) say.fatal(err.message);
+    if (err) throw err;
     time = process.hrtime(time);
     var ms = time[0] * 1e3 + time[1] / 1e6;
     console.log('time elasped: %dms'.grey, ms.toFixed(0));
@@ -23,12 +22,11 @@ switch (command) {
       'database': 'postgres'
     }).alias('d', 'database').parse(args);
 
-    generate.app(root, options, time()); 
+    generate.app(root, options); 
   }; break;
   case 'generate': {
     var entity = args.shift();
-    args.push(time());
     generate[entity].apply(generate, args);
   }; break;
-  default: say.fatal('unrecognized command: ' + command);
+  default: throw new Error('unrecognized command: ' + command);
 }
